@@ -67,19 +67,19 @@ class EthrMethod {
         const publicKey = Buffer.from(
             base_58_1.default.decode(verificationKey.publicKeyBase58)
         ).toString('hex');
-        const { didDocument } = await this.getDocument(privateKey, did);
+        const { didDocument } = await this.getDocument(privateKey);
         return { did, address, privateKey, publicKey, chainCode, didDocument };
     }
     /**
      *
      * @param privateKey - private key as a hex string
-     * @param did - ethereum DID address
+     * @returns {CreateDidDocumentInterface}
      */
-    async getDocument(privateKey, did) {
+    async getDocument(privateKey) {
         const verificationKey = await this.createVerificationMethod(privateKey);
         const didDocument = {
             '@context': 'https://w3id.org/did/v1',
-            id: did,
+            id: verificationKey.id,
             publicKey: [verificationKey],
             authentication: [verificationKey.controller],
             assertionMethod: [verificationKey.controller],
@@ -91,14 +91,14 @@ class EthrMethod {
      *
      * @param seed - seed as a hex string
      * @param includePrivateKey - include private key
-     * @returns
+     * @returns {VerificationKeyInterface}
      */
     async createVerificationMethod(seed, includePrivateKey = false) {
         let jwk = {
-            id: undefined,
-            controller: undefined,
+            id: '',
+            controller: '',
             type: 'EcdsaSecp256k1Signature2019',
-            publicKeyBase58: undefined
+            publicKeyBase58: ''
         };
         const privateKey = new Uint8Array(Buffer.from(seed, 'hex'));
         const verified = secp256k1.privateKeyVerify(privateKey);

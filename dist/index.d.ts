@@ -8,14 +8,14 @@ export default class EthrMethod {
     /**
      *
      * @param privateKey - private key as a hex string
-     * @param did - ethereum DID address
+     * @returns {CreateDidDocumentInterface}
      */
-    getDocument(privateKey: string, did: string): Promise<CreateDidDocumentInterface>;
+    getDocument(privateKey: string): Promise<CreateDidDocumentInterface>;
     /**
      *
      * @param seed - seed as a hex string
      * @param includePrivateKey - include private key
-     * @returns
+     * @returns {VerificationKeyInterface}
      */
     createVerificationMethod(
         seed: string,
