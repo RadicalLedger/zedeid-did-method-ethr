@@ -1,7 +1,7 @@
 interface VerificationKeyInterface {
     id: string;
-    publicKeyBase58?: string;
     controller: string;
+    publicKeyBase58?: string;
     [x: string | symbol]: any;
 }
 
