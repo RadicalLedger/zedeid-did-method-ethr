@@ -1,4 +1,5 @@
 interface VerificationKeyInterface {
+    id: string;
     publicKeyBase58?: string;
     controller: string;
     [x: string | symbol]: any;
@@ -10,7 +11,7 @@ interface KeysInterface {
     privateKey: string | undefined;
     publicKey: string;
     chainCode: string;
-    verificationKey: VerificationKeyInterface;
+    didDocument: DidDocumentInterface;
 }
 
 interface BIP32Interface {
@@ -18,6 +19,19 @@ interface BIP32Interface {
     privateKey?: Buffer;
     publicKey?: Buffer;
     [x: string | symbol]: any;
+}
+
+interface DidDocumentInterface {
+    '@context'?: string;
+    id: string;
+    publicKey: Object;
+    authentication: Object;
+    assertionMethod: Object;
+    service: Object;
+}
+
+interface CreateDidDocumentInterface {
+    didDocument: DidDocumentInterface;
 }
 
 interface MethodInterface {

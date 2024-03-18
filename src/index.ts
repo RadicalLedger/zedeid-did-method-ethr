@@ -1,40 +1,80 @@
-import { EcdsaSecp256k1VerificationKey2019 } from '@bloomprotocol/ecdsa-secp256k1-verification-key-2019';
+import * as secp256k1 from 'secp256k1';
 import Base58 from 'base-58';
 
 export default class EthrMethod {
     /**
      *
      * @param node BIP32Interface
-     * @returns {KeysInterface} { did, address, privateKey, publicKey, chainCode, verificationKey }.
+     * @returns {KeysInterface} { did, address, privateKey, publicKey, chainCode, didDocument }.
      */
     async getKeys(node: BIP32Interface): Promise<KeysInterface> {
         const privateKey = node.privateKey?.toString('hex');
         const chainCode = node.chainCode?.toString('hex');
         const address = node.publicKey?.toString('hex');
         const did = `did:ethr:0x${address}`;
-        const verificationKey: VerificationKeyInterface = await createVerificationMethod(
-            privateKey,
-            did
+        const verificationKey: VerificationKeyInterface = await this.createVerificationMethod(
+            privateKey as string
         );
         const publicKey = Buffer.from(Base58.decode(verificationKey.publicKeyBase58)).toString(
             'hex'
         );
 
-        return { did, address, privateKey, publicKey, chainCode, verificationKey };
+        const { didDocument } = await this.getDocument(privateKey as string, did);
+
+        return { did, address, privateKey, publicKey, chainCode, didDocument };
     }
-}
 
-export async function createVerificationMethod(seed: any, did: string) {
-    const k = await EcdsaSecp256k1VerificationKey2019.generate({
-        id: did,
-        controller: `${did}#controller`,
-        seed: new Uint8Array(Buffer.from(seed, 'hex'))
-    });
+    /**
+     *
+     * @param privateKey - private key as a hex string
+     * @param did - ethereum DID address
+     */
+    async getDocument(privateKey: string, did: string): Promise<CreateDidDocumentInterface> {
+        const verificationKey: VerificationKeyInterface =
+            await this.createVerificationMethod(privateKey);
 
-    let jwk = k.export({
-        privateKey: true,
-        publicKey: true
-    });
+        const didDocument = {
+            '@context': 'https://w3id.org/did/v1',
+            id: did,
+            publicKey: [verificationKey],
+            authentication: [verificationKey.controller],
+            assertionMethod: [verificationKey.controller],
+            service: []
+        };
 
-    return jwk;
+        return { didDocument };
+    }
+
+    /**
+     *
+     * @param seed - seed as a hex string
+     * @param includePrivateKey - include private key
+     * @returns
+     */
+    async createVerificationMethod(
+        seed: string,
+        includePrivateKey: boolean = false
+    ): Promise<VerificationKeyInterface> {
+        let jwk: any = {
+            id: undefined,
+            controller: undefined,
+            type: 'EcdsaSecp256k1Signature2019',
+            publicKeyBase58: undefined
+        };
+        const privateKey = new Uint8Array(Buffer.from(seed, 'hex'));
+        const verified = secp256k1.privateKeyVerify(privateKey);
+
+        if (verified) {
+            const publicKey = secp256k1.publicKeyCreate(privateKey, true);
+            jwk.publicKeyBase58 = Base58.encode(publicKey);
+            jwk.id = `did:ethr:0x${Buffer.from(publicKey).toString('hex')}`;
+            jwk.controller = `${jwk.id}#controller`;
+
+            if (includePrivateKey) {
+                jwk.privateKeyBase58 = Base58.encode(privateKey);
+            }
+        }
+
+        return jwk;
+    }
 }
