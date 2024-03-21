@@ -23,18 +23,26 @@ describe('HD Wallet Ethr Method', function () {
                 id: 'did:ethr:0x0339a36013301597daef41fbe593a02cc513d0b55527ec2df1050e2e8ff49c85c2',
                 publicKey: [
                     {
-                        id: 'did:ethr:0x0339a36013301597daef41fbe593a02cc513d0b55527ec2df1050e2e8ff49c85c2',
-                        controller:
-                            'did:ethr:0x0339a36013301597daef41fbe593a02cc513d0b55527ec2df1050e2e8ff49c85c2#controller',
-                        type: 'EcdsaSecp256k1Signature2019',
-                        publicKeyBase58: 'xZwqkkEPoEfRd416EEGycd2zK3x38scGckv4v3KZ5DUM'
+                        id: 'did:ethr:0x0339a36013301597daef41fbe593a02cc513d0b55527ec2df1050e2e8ff49c85c2#owner',
+                        owner: 'did:ethr:0x0339a36013301597daef41fbe593a02cc513d0b55527ec2df1050e2e8ff49c85c2',
+                        type: 'Secp256k1VerificationKey2018',
+                        ethereumAddress:
+                            '0x0339a36013301597daef41fbe593a02cc513d0b55527ec2df1050e2e8ff49c85c2'
                     }
                 ],
                 authentication: [
-                    'did:ethr:0x0339a36013301597daef41fbe593a02cc513d0b55527ec2df1050e2e8ff49c85c2#controller'
+                    {
+                        type: 'Secp256k1SignatureAuthentication2018',
+                        publicKey:
+                            'did:ethr:0x0339a36013301597daef41fbe593a02cc513d0b55527ec2df1050e2e8ff49c85c2#owner'
+                    }
                 ],
                 assertionMethod: [
-                    'did:ethr:0x0339a36013301597daef41fbe593a02cc513d0b55527ec2df1050e2e8ff49c85c2#controller'
+                    {
+                        type: 'Secp256k1SignatureAuthentication2018',
+                        publicKey:
+                            'did:ethr:0x0339a36013301597daef41fbe593a02cc513d0b55527ec2df1050e2e8ff49c85c2#owner'
+                    }
                 ],
                 service: []
             }

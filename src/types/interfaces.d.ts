@@ -1,7 +1,7 @@
 interface VerificationKeyInterface {
     id: string;
-    controller: string;
-    publicKeyBase58?: string;
+    owner: string;
+    ethereumAddress: string;
     [x: string | symbol]: any;
 }
 

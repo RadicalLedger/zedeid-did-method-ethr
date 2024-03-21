@@ -1,5 +1,4 @@
 import * as secp256k1 from 'secp256k1';
-import Base58 from 'base-58';
 
 export default class EthrMethod {
     /**
@@ -10,14 +9,9 @@ export default class EthrMethod {
     async getKeys(node: BIP32Interface): Promise<KeysInterface> {
         const privateKey = node.privateKey?.toString('hex');
         const chainCode = node.chainCode?.toString('hex');
-        const address = node.publicKey?.toString('hex');
+        const address = node.publicKey?.toString('hex') as string;
+        const publicKey = address;
         const did = `did:ethr:0x${address}`;
-        const verificationKey: VerificationKeyInterface = await this.createVerificationMethod(
-            privateKey as string
-        );
-        const publicKey = Buffer.from(Base58.decode(verificationKey.publicKeyBase58)).toString(
-            'hex'
-        );
 
         const { didDocument } = await this.getDocument(privateKey as string);
 
@@ -33,12 +27,17 @@ export default class EthrMethod {
         const verificationKey: VerificationKeyInterface =
             await this.createVerificationMethod(privateKey);
 
+        const authentication = {
+            type: 'Secp256k1SignatureAuthentication2018',
+            publicKey: verificationKey.id
+        };
+
         const didDocument = {
             '@context': 'https://w3id.org/did/v1',
-            id: verificationKey.id,
+            id: verificationKey.owner,
             publicKey: [verificationKey],
-            authentication: [verificationKey.controller],
-            assertionMethod: [verificationKey.controller],
+            authentication: [authentication],
+            assertionMethod: [authentication],
             service: []
         };
 
@@ -57,21 +56,21 @@ export default class EthrMethod {
     ): Promise<VerificationKeyInterface> {
         let jwk: VerificationKeyInterface = {
             id: '',
-            controller: '',
-            type: 'EcdsaSecp256k1Signature2019',
-            publicKeyBase58: ''
+            owner: '',
+            type: 'Secp256k1VerificationKey2018',
+            ethereumAddress: ''
         };
         const privateKey = new Uint8Array(Buffer.from(seed, 'hex'));
         const verified = secp256k1.privateKeyVerify(privateKey);
 
         if (verified) {
             const publicKey = secp256k1.publicKeyCreate(privateKey, true);
-            jwk.publicKeyBase58 = Base58.encode(publicKey);
-            jwk.id = `did:ethr:0x${Buffer.from(publicKey).toString('hex')}`;
-            jwk.controller = `${jwk.id}#controller`;
+            jwk.ethereumAddress = `0x${Buffer.from(publicKey).toString('hex')}`;
+            jwk.owner = `did:ethr:0x${Buffer.from(publicKey).toString('hex')}`;
+            jwk.id = `${jwk.owner}#owner`;
 
             if (includePrivateKey) {
-                jwk.privateKeyBase58 = Base58.encode(privateKey);
+                jwk.publicKeyHex = privateKey;
             }
         }
 
