@@ -25,10 +25,8 @@
     "author": "Radical Ledger Technologies",
     "license": "ISC",
     "devDependencies": {
-        "@types/crypto-ld": "^7.0.4",
         "@types/node": "^20.11.25",
         "bip32": "^4.0.0",
-        "crypto-ld": "^7.0.0",
         "husky": "8.0.1",
         "lint-staged": "13.0.3",
         "prettier": "^3.2.5",
