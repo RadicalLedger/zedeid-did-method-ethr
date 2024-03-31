@@ -4,7 +4,7 @@ Library for generating and working with Secp256k1VerificationKey2018 key pairs.
 
 # Installation
 
-* Node.js 16.0+ is required.
+-   Node.js 16.0+ is required.
 
 To install locally (for development):
 
@@ -49,7 +49,7 @@ const didDocument = await ethrMethod.getDocument(privateKey);
 console.log(didDocument);
 ```
 
-### Generate Verification Key 
+### Generate Verification Key
 
 Generate verification key with `createVerificationMethod` method for a given seed.
 
@@ -60,4 +60,3 @@ const verificationKey = await ethrMethod.createVerificationMethod(seed, includeP
 
 console.log(verificationKey);
 ```
-
