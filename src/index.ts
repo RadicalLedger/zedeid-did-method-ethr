@@ -1,4 +1,5 @@
 import * as secp256k1 from 'secp256k1';
+import keccak256 from 'keccak256';
 
 export default class EthrMethod {
     /**
@@ -9,9 +10,9 @@ export default class EthrMethod {
     async getKeys(node: BIP32Interface): Promise<KeysInterface> {
         const privateKey = node.privateKey?.toString('hex');
         const chainCode = node.chainCode?.toString('hex');
-        const address = node.publicKey?.toString('hex') as string;
-        const publicKey = address;
-        const did = `did:ethr:0x${address}`;
+        const publicKey = node.publicKey?.toString('hex') as string;
+        const address = this.getAddressFromPublicKey(publicKey);
+        const did = `did:ethr:${address}`;
 
         const { didDocument } = await this.getDocument(privateKey as string);
 
@@ -64,9 +65,10 @@ export default class EthrMethod {
         const verified = secp256k1.privateKeyVerify(privateKey);
 
         if (verified) {
-            const publicKey = secp256k1.publicKeyCreate(privateKey, true);
-            jwk.ethereumAddress = `0x${Buffer.from(publicKey).toString('hex')}`;
-            jwk.owner = `did:ethr:0x${Buffer.from(publicKey).toString('hex')}`;
+            const publicKeyBuffer = secp256k1.publicKeyCreate(privateKey, true);
+            const publicKey = Buffer.from(publicKeyBuffer).toString('hex');
+            jwk.ethereumAddress = this.getAddressFromPublicKey(publicKey);
+            jwk.owner = `did:ethr:${jwk.ethereumAddress}`;
             jwk.id = `${jwk.owner}#owner`;
 
             if (includePrivateKey) {
@@ -75,5 +77,15 @@ export default class EthrMethod {
         }
 
         return jwk;
+    }
+
+    private getAddressFromPublicKey(publicKey: string): string {
+        const hashPublicKey = keccak256(publicKey).toString('hex');
+        /* Calculate the starting index to get the last twenty bytes. Each byte is represented by 2 characters in a hex string */
+        const startIndex = hashPublicKey.length - 20 * 2;
+        /* Extract the last twenty bytes */
+        const lastTwentyBytes = hashPublicKey.substring(startIndex);
+
+        return `0x${lastTwentyBytes}`;
     }
 }
