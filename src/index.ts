@@ -91,7 +91,6 @@ export default class EthrMethod {
     }
 
     private getAddressFromPublicKey(publicKey: string): string {
-        console.log(publicKey);
         const publicKeyBuffer = Buffer.from(publicKey, 'hex');
         const addressBuffer = Buffer.from(keccak256(publicKeyBuffer)).slice(-20);
 
