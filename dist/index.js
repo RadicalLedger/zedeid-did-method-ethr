@@ -121,7 +121,6 @@ class EthrMethod {
         return Buffer.from(publicKeyBuffer).toString('hex');
     }
     getAddressFromPublicKey(publicKey) {
-        console.log(publicKey);
         const publicKeyBuffer = Buffer.from(publicKey, 'hex');
         const addressBuffer = Buffer.from((0, keccak256_1.default)(publicKeyBuffer)).slice(-20);
         return `0x${addressBuffer.toString('hex')}`;
