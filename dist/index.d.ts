@@ -21,5 +21,6 @@ export default class EthrMethod {
         seed: string,
         includePrivateKey?: boolean
     ): Promise<VerificationKeyInterface>;
+    private getPublicKey;
     private getAddressFromPublicKey;
 }

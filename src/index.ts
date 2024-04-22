@@ -11,7 +11,9 @@ export default class EthrMethod {
         const privateKey = node.privateKey?.toString('hex');
         const chainCode = node.chainCode?.toString('hex');
         const publicKey = node.publicKey?.toString('hex') as string;
-        const address = this.getAddressFromPublicKey(publicKey);
+        const address = this.getAddressFromPublicKey(
+            this.getPublicKey(privateKey as string, false)
+        );
         const did = `did:ethr:${address}`;
 
         const { didDocument } = await this.getDocument(privateKey as string);
@@ -65,9 +67,7 @@ export default class EthrMethod {
         const verified = secp256k1.privateKeyVerify(privateKey);
 
         if (verified) {
-            const publicKeyBuffer = secp256k1.publicKeyCreate(privateKey, true);
-            const publicKey = Buffer.from(publicKeyBuffer).toString('hex');
-            jwk.ethereumAddress = this.getAddressFromPublicKey(publicKey);
+            jwk.ethereumAddress = this.getAddressFromPublicKey(this.getPublicKey(seed, false));
             jwk.owner = `did:ethr:${jwk.ethereumAddress}`;
             jwk.id = `${jwk.owner}#owner`;
 
@@ -79,13 +79,22 @@ export default class EthrMethod {
         return jwk;
     }
 
-    private getAddressFromPublicKey(publicKey: string): string {
-        const hashPublicKey = keccak256(publicKey).toString('hex');
-        /* Calculate the starting index to get the last twenty bytes. Each byte is represented by 2 characters in a hex string */
-        const startIndex = hashPublicKey.length - 20 * 2;
-        /* Extract the last twenty bytes */
-        const lastTwentyBytes = hashPublicKey.substring(startIndex);
+    private getPublicKey(privateKey: string, compressed: boolean = true): string {
+        const privateKeyBuffer = Buffer.from(Buffer.from(privateKey, 'hex'));
 
-        return `0x${lastTwentyBytes}`;
+        let publicKeyBuffer = secp256k1.publicKeyCreate(privateKeyBuffer, compressed);
+
+        /* remove compressed flag */
+        if (!compressed) publicKeyBuffer = publicKeyBuffer.slice(1);
+
+        return Buffer.from(publicKeyBuffer).toString('hex');
+    }
+
+    private getAddressFromPublicKey(publicKey: string): string {
+        console.log(publicKey);
+        const publicKeyBuffer = Buffer.from(publicKey, 'hex');
+        const addressBuffer = Buffer.from(keccak256(publicKeyBuffer)).slice(-20);
+
+        return `0x${addressBuffer.toString('hex')}`;
     }
 }
