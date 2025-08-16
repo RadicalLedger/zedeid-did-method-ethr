@@ -29,18 +29,17 @@ export default class EthrMethod {
     async getDocument(privateKey: string): Promise<CreateDidDocumentInterface> {
         const verificationKey: VerificationKeyInterface =
             await this.createVerificationMethod(privateKey);
+        const ecdsaVerificationKey: VerificationKeyInterface =
+            await this.createEcdsaVerificationMethod(privateKey);
 
-        const authentication = {
-            type: 'Secp256k1SignatureAuthentication2018',
-            publicKey: verificationKey.id
-        };
+        const authentication = [verificationKey.id, ecdsaVerificationKey.id];
 
         const didDocument = {
             '@context': 'https://w3id.org/did/v1',
-            id: verificationKey.owner,
-            publicKey: [verificationKey],
-            authentication: [authentication],
-            assertionMethod: [authentication],
+            id: verificationKey.controller,
+            verificationMethod: [verificationKey, ecdsaVerificationKey],
+            authentication: authentication,
+            assertionMethod: authentication,
             service: []
         };
 
@@ -59,7 +58,7 @@ export default class EthrMethod {
     ): Promise<VerificationKeyInterface> {
         let jwk: VerificationKeyInterface = {
             id: '',
-            owner: '',
+            controller: '',
             type: 'Secp256k1VerificationKey2018',
             ethereumAddress: ''
         };
@@ -68,12 +67,37 @@ export default class EthrMethod {
 
         if (verified) {
             jwk.ethereumAddress = this.getAddressFromPublicKey(this.getPublicKey(seed, false));
-            jwk.owner = `did:ethr:${jwk.ethereumAddress}`;
-            jwk.id = `${jwk.owner}#owner`;
+            jwk.controller = `did:ethr:${jwk.ethereumAddress}`;
+            jwk.id = `${jwk.controller}#owner`;
 
             if (includePrivateKey) {
-                jwk.publicKeyHex = privateKey;
+                jwk.privateKeyHex = privateKey;
             }
+        }
+
+        return jwk;
+    }
+
+    /**
+     *
+     * @param seed - seed as a hex string
+     * @returns {VerificationKeyInterface}
+     */
+    async createEcdsaVerificationMethod(seed: string): Promise<VerificationKeyInterface> {
+        let jwk: VerificationKeyInterface = {
+            id: '',
+            controller: '',
+            type: 'EcdsaSecp256k1VerificationKey2019',
+            publicKeyHex: ''
+        };
+        const privateKey = new Uint8Array(Buffer.from(seed, 'hex'));
+        const verified = secp256k1.privateKeyVerify(privateKey);
+        const address = this.getAddressFromPublicKey(this.getPublicKey(seed, false));
+
+        if (verified) {
+            jwk.publicKeyHex = this.getPublicKey(seed, true);
+            jwk.controller = `did:ethr:${address}`;
+            jwk.id = `${jwk.controller}#ecdsa`;
         }
 
         return jwk;

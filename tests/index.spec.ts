@@ -22,25 +22,28 @@ describe('HD Wallet Ethr Method', function () {
             didDocument: {
                 '@context': 'https://w3id.org/did/v1',
                 id: 'did:ethr:0x022b971dff0c43305e691ded7a14367af19d6407',
-                publicKey: [
+                verificationMethod: [
                     {
                         id: 'did:ethr:0x022b971dff0c43305e691ded7a14367af19d6407#owner',
-                        owner: 'did:ethr:0x022b971dff0c43305e691ded7a14367af19d6407',
+                        controller: 'did:ethr:0x022b971dff0c43305e691ded7a14367af19d6407',
                         type: 'Secp256k1VerificationKey2018',
                         ethereumAddress: '0x022b971dff0c43305e691ded7a14367af19d6407'
+                    },
+                    {
+                        id: 'did:ethr:0x022b971dff0c43305e691ded7a14367af19d6407#ecdsa',
+                        controller: 'did:ethr:0x022b971dff0c43305e691ded7a14367af19d6407',
+                        type: 'EcdsaSecp256k1VerificationKey2019',
+                        publicKeyHex:
+                            '03844a5d329470697de9926c9c98839ea33b6dd9507a896194ae2b91d71faa16d6'
                     }
                 ],
                 authentication: [
-                    {
-                        type: 'Secp256k1SignatureAuthentication2018',
-                        publicKey: 'did:ethr:0x022b971dff0c43305e691ded7a14367af19d6407#owner'
-                    }
+                    'did:ethr:0x022b971dff0c43305e691ded7a14367af19d6407#owner',
+                    'did:ethr:0x022b971dff0c43305e691ded7a14367af19d6407#ecdsa'
                 ],
                 assertionMethod: [
-                    {
-                        type: 'Secp256k1SignatureAuthentication2018',
-                        publicKey: 'did:ethr:0x022b971dff0c43305e691ded7a14367af19d6407#owner'
-                    }
+                    'did:ethr:0x022b971dff0c43305e691ded7a14367af19d6407#owner',
+                    'did:ethr:0x022b971dff0c43305e691ded7a14367af19d6407#ecdsa'
                 ],
                 service: []
             }
