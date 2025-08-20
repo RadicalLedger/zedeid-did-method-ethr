@@ -1,53 +1,33 @@
-'use strict';
-var __createBinding =
-    (this && this.__createBinding) ||
-    (Object.create
-        ? function (o, m, k, k2) {
-              if (k2 === undefined) k2 = k;
-              var desc = Object.getOwnPropertyDescriptor(m, k);
-              if (!desc || ('get' in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-                  desc = {
-                      enumerable: true,
-                      get: function () {
-                          return m[k];
-                      }
-                  };
-              }
-              Object.defineProperty(o, k2, desc);
-          }
-        : function (o, m, k, k2) {
-              if (k2 === undefined) k2 = k;
-              o[k2] = m[k];
-          });
-var __setModuleDefault =
-    (this && this.__setModuleDefault) ||
-    (Object.create
-        ? function (o, v) {
-              Object.defineProperty(o, 'default', { enumerable: true, value: v });
-          }
-        : function (o, v) {
-              o['default'] = v;
-          });
-var __importStar =
-    (this && this.__importStar) ||
-    function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null)
-            for (var k in mod)
-                if (k !== 'default' && Object.prototype.hasOwnProperty.call(mod, k))
-                    __createBinding(result, mod, k);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-var __importDefault =
-    (this && this.__importDefault) ||
-    function (mod) {
-        return mod && mod.__esModule ? mod : { default: mod };
-    };
-Object.defineProperty(exports, '__esModule', { value: true });
-const secp256k1 = __importStar(require('secp256k1'));
-const keccak256_1 = __importDefault(require('keccak256'));
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const secp256k1 = __importStar(require("secp256k1"));
+const keccak256_1 = __importDefault(require("keccak256"));
 class EthrMethod {
     /**
      *
@@ -56,12 +36,9 @@ class EthrMethod {
      */
     async getKeys(node) {
         var _a, _b, _c;
-        const privateKey =
-            (_a = node.privateKey) === null || _a === void 0 ? void 0 : _a.toString('hex');
-        const chainCode =
-            (_b = node.chainCode) === null || _b === void 0 ? void 0 : _b.toString('hex');
-        const publicKey =
-            (_c = node.publicKey) === null || _c === void 0 ? void 0 : _c.toString('hex');
+        const privateKey = (_a = node.privateKey) === null || _a === void 0 ? void 0 : _a.toString('hex');
+        const chainCode = (_b = node.chainCode) === null || _b === void 0 ? void 0 : _b.toString('hex');
+        const publicKey = (_c = node.publicKey) === null || _c === void 0 ? void 0 : _c.toString('hex');
         const address = this.getAddressFromPublicKey(this.getPublicKey(privateKey, false));
         const did = `did:ethr:${address}`;
         const { didDocument } = await this.getDocument(privateKey);
@@ -74,16 +51,14 @@ class EthrMethod {
      */
     async getDocument(privateKey) {
         const verificationKey = await this.createVerificationMethod(privateKey);
-        const authentication = {
-            type: 'Secp256k1SignatureAuthentication2018',
-            publicKey: verificationKey.id
-        };
+        const ecdsaVerificationKey = await this.createEcdsaVerificationMethod(privateKey);
+        const authentication = [verificationKey.id, ecdsaVerificationKey.id];
         const didDocument = {
             '@context': 'https://w3id.org/did/v1',
-            id: verificationKey.owner,
-            publicKey: [verificationKey],
-            authentication: [authentication],
-            assertionMethod: [authentication],
+            id: verificationKey.controller,
+            verificationMethod: [verificationKey, ecdsaVerificationKey],
+            authentication: authentication,
+            assertionMethod: authentication,
             service: []
         };
         return { didDocument };
@@ -97,7 +72,7 @@ class EthrMethod {
     async createVerificationMethod(seed, includePrivateKey = false) {
         let jwk = {
             id: '',
-            owner: '',
+            controller: '',
             type: 'Secp256k1VerificationKey2018',
             ethereumAddress: ''
         };
@@ -105,11 +80,33 @@ class EthrMethod {
         const verified = secp256k1.privateKeyVerify(privateKey);
         if (verified) {
             jwk.ethereumAddress = this.getAddressFromPublicKey(this.getPublicKey(seed, false));
-            jwk.owner = `did:ethr:${jwk.ethereumAddress}`;
-            jwk.id = `${jwk.owner}#owner`;
+            jwk.controller = `did:ethr:${jwk.ethereumAddress}`;
+            jwk.id = `${jwk.controller}#owner`;
             if (includePrivateKey) {
-                jwk.publicKeyHex = privateKey;
+                jwk.privateKeyHex = privateKey;
             }
+        }
+        return jwk;
+    }
+    /**
+     *
+     * @param seed - seed as a hex string
+     * @returns {VerificationKeyInterface}
+     */
+    async createEcdsaVerificationMethod(seed) {
+        let jwk = {
+            id: '',
+            controller: '',
+            type: 'EcdsaSecp256k1VerificationKey2019',
+            publicKeyHex: ''
+        };
+        const privateKey = new Uint8Array(Buffer.from(seed, 'hex'));
+        const verified = secp256k1.privateKeyVerify(privateKey);
+        const address = this.getAddressFromPublicKey(this.getPublicKey(seed, false));
+        if (verified) {
+            jwk.publicKeyHex = this.getPublicKey(seed, true);
+            jwk.controller = `did:ethr:${address}`;
+            jwk.id = `${jwk.controller}#ecdsa`;
         }
         return jwk;
     }
@@ -117,7 +114,8 @@ class EthrMethod {
         const privateKeyBuffer = Buffer.from(Buffer.from(privateKey, 'hex'));
         let publicKeyBuffer = secp256k1.publicKeyCreate(privateKeyBuffer, compressed);
         /* remove compressed flag */
-        if (!compressed) publicKeyBuffer = publicKeyBuffer.slice(1);
+        if (!compressed)
+            publicKeyBuffer = publicKeyBuffer.slice(1);
         return Buffer.from(publicKeyBuffer).toString('hex');
     }
     getAddressFromPublicKey(publicKey) {

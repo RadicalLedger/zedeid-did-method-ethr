@@ -17,10 +17,13 @@ export default class EthrMethod {
      * @param includePrivateKey - include private key
      * @returns {VerificationKeyInterface}
      */
-    createVerificationMethod(
-        seed: string,
-        includePrivateKey?: boolean
-    ): Promise<VerificationKeyInterface>;
+    createVerificationMethod(seed: string, includePrivateKey?: boolean): Promise<VerificationKeyInterface>;
+    /**
+     *
+     * @param seed - seed as a hex string
+     * @returns {VerificationKeyInterface}
+     */
+    createEcdsaVerificationMethod(seed: string): Promise<VerificationKeyInterface>;
     private getPublicKey;
     private getAddressFromPublicKey;
 }
