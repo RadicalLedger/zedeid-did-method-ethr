@@ -37,7 +37,8 @@ export default class EthrMethod {
         const didDocument = {
             '@context': 'https://w3id.org/did/v1',
             id: verificationKey.controller,
-            verificationMethod: [verificationKey, ecdsaVerificationKey],
+            publicKey: [verificationKey],
+            verificationMethod: [ecdsaVerificationKey],
             authentication: authentication,
             assertionMethod: authentication,
             service: []
