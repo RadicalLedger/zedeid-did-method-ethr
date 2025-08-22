@@ -37,7 +37,8 @@ export default class EthrMethod {
         const didDocument = {
             '@context': 'https://w3id.org/did/v1',
             id: verificationKey.controller,
-            verificationMethod: [verificationKey, ecdsaVerificationKey],
+            publicKey: [verificationKey],
+            verificationMethod: [ecdsaVerificationKey],
             authentication: authentication,
             assertionMethod: authentication,
             service: []
@@ -67,7 +68,7 @@ export default class EthrMethod {
 
         if (verified) {
             const address = this.getAddressFromPublicKey(this.getPublicKey(seed, false));
-            jwk.publicKeyHex = this.getPublicKey(seed, false);
+            jwk.publicKeyHex = this.getPublicKey(seed, false, false);
             jwk.controller = `did:ethr:${address}`;
             jwk.id = `${jwk.controller}#owner`;
 
@@ -104,13 +105,17 @@ export default class EthrMethod {
         return jwk;
     }
 
-    private getPublicKey(privateKey: string, compressed: boolean = true): string {
+    private getPublicKey(
+        privateKey: string,
+        compressed: boolean = true,
+        removeFlag: boolean = true
+    ): string {
         const privateKeyBuffer = Buffer.from(Buffer.from(privateKey, 'hex'));
 
         let publicKeyBuffer = secp256k1.publicKeyCreate(privateKeyBuffer, compressed);
 
         /* remove compressed flag */
-        if (!compressed) publicKeyBuffer = publicKeyBuffer.slice(1);
+        if (!compressed && removeFlag) publicKeyBuffer = publicKeyBuffer.slice(1);
 
         return Buffer.from(publicKeyBuffer).toString('hex');
     }
