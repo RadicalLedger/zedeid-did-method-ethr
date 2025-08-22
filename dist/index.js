@@ -74,13 +74,14 @@ class EthrMethod {
             id: '',
             controller: '',
             type: 'Secp256k1VerificationKey2018',
-            ethereumAddress: ''
+            publicKeyHex: ''
         };
         const privateKey = new Uint8Array(Buffer.from(seed, 'hex'));
         const verified = secp256k1.privateKeyVerify(privateKey);
         if (verified) {
-            jwk.ethereumAddress = this.getAddressFromPublicKey(this.getPublicKey(seed, false));
-            jwk.controller = `did:ethr:${jwk.ethereumAddress}`;
+            const address = this.getAddressFromPublicKey(this.getPublicKey(seed, false));
+            jwk.publicKeyHex = this.getPublicKey(seed, false);
+            jwk.controller = `did:ethr:${address}`;
             jwk.id = `${jwk.controller}#owner`;
             if (includePrivateKey) {
                 jwk.privateKeyHex = privateKey;
