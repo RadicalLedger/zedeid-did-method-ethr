@@ -27,7 +27,8 @@ describe('HD Wallet Ethr Method', function () {
                         id: 'did:ethr:0x022b971dff0c43305e691ded7a14367af19d6407#owner',
                         controller: 'did:ethr:0x022b971dff0c43305e691ded7a14367af19d6407',
                         type: 'Secp256k1VerificationKey2018',
-                        ethereumAddress: '0x022b971dff0c43305e691ded7a14367af19d6407'
+                        publicKeyHex:
+                            '844a5d329470697de9926c9c98839ea33b6dd9507a896194ae2b91d71faa16d64b9c486b7a6395543027bc6e8c99e1967fb41718e1ab1ef66585c5c55470ca1d'
                     },
                     {
                         id: 'did:ethr:0x022b971dff0c43305e691ded7a14367af19d6407#ecdsa',
