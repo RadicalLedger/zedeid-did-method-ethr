@@ -80,7 +80,7 @@ class EthrMethod {
         const verified = secp256k1.privateKeyVerify(privateKey);
         if (verified) {
             const address = this.getAddressFromPublicKey(this.getPublicKey(seed, false));
-            jwk.publicKeyHex = this.getPublicKey(seed, false);
+            jwk.publicKeyHex = this.getPublicKey(seed, false, false);
             jwk.controller = `did:ethr:${address}`;
             jwk.id = `${jwk.controller}#owner`;
             if (includePrivateKey) {
@@ -111,11 +111,11 @@ class EthrMethod {
         }
         return jwk;
     }
-    getPublicKey(privateKey, compressed = true) {
+    getPublicKey(privateKey, compressed = true, removeFlag = true) {
         const privateKeyBuffer = Buffer.from(Buffer.from(privateKey, 'hex'));
         let publicKeyBuffer = secp256k1.publicKeyCreate(privateKeyBuffer, compressed);
         /* remove compressed flag */
-        if (!compressed)
+        if (!compressed && removeFlag)
             publicKeyBuffer = publicKeyBuffer.slice(1);
         return Buffer.from(publicKeyBuffer).toString('hex');
     }
